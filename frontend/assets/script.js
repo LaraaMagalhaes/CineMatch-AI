@@ -5,11 +5,24 @@ async function getRecommendations() {
 
     if (!movieName) return alert("Please enter a movie name!");
     resultsDiv.innerHTML = '<p>Thinking...</p>';
+
     try {
         const response = await fetch(`http://127.0.0.1:8000/recommend/${movieName}`);
+
         if (!response.ok) throw new Error("Movie not found! Try the exact English title.");
+
         const data = await response.json();
         resultsDiv.innerHTML = ''; 
+
+
+        if (data.movie && data.movie.toLowerCase() !== movieName.toLowerCase()) {
+            const msg = document.createElement('p');
+            msg.style.color = '#e94560';
+            msg.style.fontStyle = "italic";
+            msg.innerHTML = `Showing results for: <strong>${data.movie}</strong>`;
+            resultsDiv.appendChild(msg);
+        }
+        
         data.recommendations.forEach(movie => {
             const card = document.createElement('div');
             card.className = 'card';

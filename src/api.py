@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import pickle
 import os
 import pandas as pd
+from thefuzz import process
 
 # Initialize FastAPI app
 app = FastAPI(title="Movie Recommender API")
@@ -44,12 +45,24 @@ def home():
 @app.get("/recommend/{title}")
 def recommend_movies(title: str):
     # Recommend movies based on the given title
-    #verify if the title exists in the dataset
-    if title not in indices:
-        raise HTTPException(status_code=404, detail="Movie not found try the same title in english")
+    #try to find the exact title first
+    if title in indices:
+        idx = indices[title]
+        movie_found = title
+    else:
+        # If not found, use fuzzy matching to find the closest title
+        all_titles = movies_df['title'].tolist()
+        match = process.extractOne(title, all_titles)
+        best_match_name = match[0] 
+        score = match[1]
+
+        if score < 80:  # threshold for a good match
+            raise HTTPException(status_code=404, detail="Movie title not found.")
+        
+        idx = indices[best_match_name]
+        movie_found = best_match_name # use the best matched title
     
-    # Get the index of the movie that matches the title
-    idx = indices[title]
+
     # Get the pairwise similarity scores of all movies with that movie
     sim_scores = list(enumerate(cosine_sim[idx]))
     # Sort the movies based on the similarity scores x[1] meaning the score
@@ -60,4 +73,4 @@ def recommend_movies(title: str):
     movie_indices = [i[0] for i in sim_scores]  
     recommendations = movies_df['title'].iloc[movie_indices].tolist()
 
-    return {"movie": title, "recommendations": recommendations}
+    return {"movie": movie_found, "recommendations": recommendations}
