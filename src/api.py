@@ -1,10 +1,20 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import pickle
 import os
 import pandas as pd
 
 # Initialize FastAPI app
 app = FastAPI(title="Movie Recommender API")
+
+# Enables the browser to communicate with Python.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],
+)
 
 # Global variables to hold the model data
 cosine_sim = None
@@ -49,5 +59,5 @@ def recommend_movies(title: str):
     # Get this movies indices
     movie_indices = [i[0] for i in sim_scores]  
     recommendations = movies_df['title'].iloc[movie_indices].tolist()
-    
+
     return {"movie": title, "recommendations": recommendations}
