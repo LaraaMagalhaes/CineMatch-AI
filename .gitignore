@@ -205,3 +205,20 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# --- PROJECT SPECIFIC ---
+
+# Datasets (Ignore raw CSVs)
+data/
+
+# Trained Models (Ignore large binary files)
+models/
+*.pkl
+
+# OS metadata (Lixo do Windows/Mac)
+.DS_Store
+Thumbs.db
+
+# VS Code Local Settings
+.vscode/
